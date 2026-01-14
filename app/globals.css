@@ -1,26 +1,406 @@
+/* --- Tailwind v4 core --- */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* --- Optional animation plugin --- */
+@import "tw-animate-css";
+
+/* --- DaisyUI plugin (Tailwind v4 syntax) --- */
+@plugin "daisyui" {
+    themes: all;
 }
 
+/* --- Custom dark variant --- */
+@custom-variant dark (&:is(.dark *));
+
+/* --- Tailwind v4 inline theme mapping (chỉ giữ radius + font) --- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+    --radius: 0.625rem;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* --- Base layer --- */
+@layer base {
+    body {
+        @apply bg-base-100 text-base-content;
+    }
+}
+
+/* --- shimmer animation optional --- */
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.25s ease-out forwards;
+}
+
+/* Aurora background */
+.aurora-bg {
+    background: radial-gradient(
+            circle at 20% 30%,
+            rgba(99, 166, 255, 0.3),
+            transparent
+        ),
+        radial-gradient(
+            circle at 80% 75%,
+            rgba(255, 99, 232, 0.25),
+            transparent
+        ),
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 255, 255, 0.06),
+            transparent
+        );
+    filter: blur(60px);
+}
+
+@media (max-width: 768px) {
+    .aurora-bg {
+        filter: blur(40px);
+    }
+}
+
+/* Glass neon button */
+.glass-button {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(120, 120, 255, 0.35);
+}
+
+/* Footer floating panel */
+.glass-footer {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+}
+
+.demo-card-glow {
+    box-shadow: 0 0 25px rgba(100, 100, 255, 0.35),
+        0 0 80px rgba(140, 80, 255, 0.2);
+}
+
+@font-face {
+    font-family: "Geist";
+    src: url("/fonts/Geist-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Geist";
+    src: url("/fonts/Geist-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+}
+
+@keyframes liquid-glass {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.animate-liquid-glass {
+    background-size: 200% 200%;
+    animation: liquid-glass 2.5s linear infinite;
+}
+
+/* ---------------- */
+/* custom parralax */
+/* ---------------- */
+
+.cinematic-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.cinematic-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+}
+
+.parallax-section {
+    position: relative;
+}
+
+.hero,
+.demo-section,
+.features-section,
+.cta-section {
+    position: absolute;
+    inset: 0;
+    height: 100vh;
+}
+
+@media ((min-width: 768px) and (max-width: 1023px)) {
+    .hero,
+    .demo-section,
+    .features-section,
+    .cta-section {
+        position: relative;
+        height: auto;
+        overflow: visible;
+    }
+
+    .hero {
+        padding-top: 120px;
+    }
+
+    .demo-stage {
+        gap: 100px;
+    }
+
+    .demo-card-side {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero,
+    .demo-section,
+    .features-section,
+    .cta-section {
+        position: relative;
+        height: auto;
+        overflow: visible;
+    }
+
+    .hero {
+        padding-top: 120px;
+    }
+
+    .demo-stage {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .demo-hint-left,
+    .demo-hint-right {
+        display: none;
+    }
+
+    .demo-card-side {
+        display: none;
+    }
+}
+
+.hero-bg {
+    transform-origin: center center;
+}
+
+.hero-bg,
+.hero-content {
+    will-change: transform;
+}
+
+.hero-title {
+    will-change: transform, filter;
+}
+
+.hero-title span {
+    display: inline-block;
+}
+
+/* =========================
+   DEMO CARD – BASE
+========================= */
+
+.demo-card {
+    will-change: transform;
+    transform-style: preserve-3d;
+}
+
+/* =========================
+   SIDE CARDS (WRAPPER)
+========================= */
+
+.demo-card-side {
+    position: absolute;
+    width: 17rem;
+    aspect-ratio: 9 / 16;
+
+    pointer-events: auto;
+    transform-style: preserve-3d;
+    z-index: 10;
+}
+
+/* =========================
+   CARD INNER (HOVER TARGET)
+========================= */
+
+.demo-card-inner {
+    width: 100%;
+    height: 100%;
+
+    border-radius: 1.5rem;
+    overflow: hidden;
+
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+
+    /* BASE STATE */
+    transform: translateY(0) scale(0.95) translateZ(0);
+    opacity: 0.65;
+    filter: blur(0.4px);
+
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
+
+    will-change: transform, opacity;
+}
+
+/* =========================
+   HOVER — LIFT EFFECT
+========================= */
+
+.demo-card-side:hover .demo-card-inner {
+    transform: translateY(-50px) scale(0.98) translateZ(40px);
+    opacity: 1;
+    filter: blur(0);
+    box-shadow: 0 45px 120px rgba(0, 0, 0, 0.55);
+}
+
+/* hover MAIN → disable side hover */
+.demo-card:has(.demo-card-main:hover) .demo-card-side {
+    pointer-events: none;
+    opacity: 0.4;
+    filter: blur(1px);
+}
+
+/* =========================
+   OPTIONAL — DIM OTHER SIDE
+========================= */
+
+.demo-card-side:hover ~ .demo-card-side .demo-card-inner {
+    opacity: 0.35;
+    filter: blur(1px);
+}
+
+/* ===== PERSPECTIVE ===== */
+.parallax-perspective {
+    perspective: 1400px;
+}
+
+/* ===== CARD CORE ===== */
+.parallax-card {
+    position: relative;
+    transform-style: preserve-3d;
+
+    border-radius: 28px;
+    padding: 28px;
+
+    background: rgba(15, 18, 28, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+}
+
+/* ===== STACK LAYERS ===== */
+.parallax-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    opacity: 0;
+    transform: translateZ(0) translate(0, 0);
+    transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity 0.4s ease, filter 0.4s ease;
+}
+
+/* ===== HOVER = STACK EXPLODE ===== */
+.parallax-card:hover {
+    backdrop-filter: blur(0);
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.parallax-card:hover .layer-1 {
+    opacity: 1;
+    transform: translateZ(-12px) translate(6px, 6px);
+}
+
+.parallax-card:hover .layer-2 {
+    opacity: 1;
+    transform: translateZ(-24px) translate(12px, 12px);
+}
+
+.parallax-card:hover .layer-3 {
+    opacity: 1;
+    transform: translateZ(-36px) translate(18px, 18px);
+}
+
+/* ===== CONTENT ===== */
+.parallax-content {
+    position: relative;
+    z-index: 10;
+    transform: translateZ(0);
+}
+
+/* ICON */
+.icon-wrap {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+    background: rgba(99, 102, 241, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
 }
