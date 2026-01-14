@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import EmptyState from "./_components/empty-state";
 import { VideoDataType } from "@/configs/schema";
@@ -12,6 +13,10 @@ import VideoSkeletonList from "./_components/video-skeleton-list";
 import { useSearchStore } from "@/app/store/use-search-store";
 import NoSearchResult from "@/components/ui/no-search-result";
 import { useSortStore } from "@/app/store/use-sort-store";
+
+export const metadata: Metadata = {
+    title: "Dashboard",
+};
 
 const DashboardPage = () => {
     const { user } = useUser();

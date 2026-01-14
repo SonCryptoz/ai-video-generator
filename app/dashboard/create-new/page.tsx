@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "@/app/actions/toast";
+import type { Metadata } from "next";
 
 import SelectTopic from "./_components/select-topic";
 import SelectStyle from "./_components/select-style";
@@ -13,6 +14,10 @@ import CustomLoading from "./_components/custom-loading";
 import { useVideoData } from "@/app/_context/video-data-context";
 import PlayerDialog from "../_components/player-dialog";
 import { UserDetailsContext } from "@/app/_context/user-details-context";
+
+export const metadata: Metadata = {
+    title: "Create New Video",
+};
 
 // ---- Định nghĩa type chuẩn cho form ---- //
 export interface FormDataType {
@@ -62,7 +67,9 @@ const CreateNewPage = () => {
     // Generate button
     const onClickGenerate = () => {
         if (!formData.topic || !formData.style || !formData.duration) {
-            toast.warning("Please select complete information before creating video!");
+            toast.warning(
+                "Please select complete information before creating video!",
+            );
             return;
         }
 

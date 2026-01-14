@@ -2,8 +2,13 @@
 
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
+import type { Metadata } from "next";
 
 import { THEMES, useThemeStore } from "@/app/store/use-theme-store";
+
+export const metadata: Metadata = {
+    title: "Settings",
+};
 
 const SettingsPage = () => {
     const { user } = useUser();
