@@ -7,7 +7,7 @@ import {
     useCurrentFrame,
     interpolate,
     Html5Audio,
-    OffthreadVideo,
+    Audio,
 } from "remotion";
 
 type Props = VideoDataType & {
@@ -127,7 +127,7 @@ const RemotionVideo = ({
             {/* AUDIO */}
             {audioFileUrl &&
                 (isPreview ? (
-                    <OffthreadVideo src={audioFileUrl} />
+                    <Audio src={audioFileUrl} />
                 ) : (
                     <Html5Audio src={audioFileUrl} />
                 ))}
