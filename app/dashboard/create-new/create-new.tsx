@@ -3,7 +3,6 @@
 import { useContext, useEffect, useState } from "react";
 // import { useCallback } from "react";
 import axios from "axios";
-import { useUser } from "@clerk/nextjs";
 import { toast } from "@/app/actions/toast";
 
 import SelectTopic from "./_components/select-topic";
@@ -31,8 +30,6 @@ interface VideoScriptResponse {
 }
 
 const CreateNewPage = () => {
-    const { user } = useUser();
-
     const [formData, setFormData] = useState<FormDataType>({ duration: 30 });
     const [loading, setLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -319,9 +316,6 @@ const CreateNewPage = () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         ...videoData,
-                        email:
-                            user?.primaryEmailAddress?.emailAddress ||
-                            "unknown",
                     }),
                 });
 
@@ -364,7 +358,6 @@ const CreateNewPage = () => {
         videoData,
         isSaved,
         userDetails?.email,
-        user?.primaryEmailAddress?.emailAddress,
         // updateUserCredits,
         setVideoData,
     ]);

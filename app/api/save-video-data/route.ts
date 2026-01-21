@@ -1,8 +1,19 @@
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/configs/db";
 import { VideoDataTable } from "@/configs/schema";
+import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {
     try {
+        const { userId } = await auth();
+
+        if (!userId) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 },
+            );
+        }
+
         const data = await req.json();
 
         const result = await db
@@ -12,14 +23,15 @@ export const POST = async (req: Request) => {
                 audioFileUrl: data.audioUrl,
                 captions: data.captions,
                 imageList: data.imageUrls,
-                createdBy: data.email,
+                createdBy: userId,
             })
             .returning({ id: VideoDataTable.id });
 
-        return Response.json({ id: result[0].id });
+        return NextResponse.json({ id: result[0].id });
     } catch (err) {
-        return Response.json(
-            { error: "Failed to save video data: ", err },
+        console.error("SAVE VIDEO ERROR:", err);
+        return NextResponse.json(
+            { error: "Failed to save video data" },
             { status: 500 },
         );
     }

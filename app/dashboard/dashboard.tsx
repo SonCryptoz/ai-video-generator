@@ -21,21 +21,18 @@ const DashboardPage = () => {
     const [videos, setVideos] = useState<VideoDataType[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const email = user?.primaryEmailAddress?.emailAddress;
-
-    const getVideoList = async (email: string) => {
-        const res = await fetch(`/api/get-videos?email=${email}`);
+    const getVideoList = async () => {
+        const res = await fetch("/api/get-videos");
         return await res.json();
     };
 
     useEffect(() => {
-        if (!email) return;
-
         let ignore = false;
+
         const fetchVideos = async () => {
             setLoading(true);
             try {
-                const data = await getVideoList(email);
+                const data = await getVideoList();
                 if (!ignore) setVideos(data || []);
             } catch (err) {
                 console.error(err);
@@ -45,10 +42,11 @@ const DashboardPage = () => {
         };
 
         fetchVideos();
+
         return () => {
             ignore = true;
         };
-    }, [email]);
+    }, []);
 
     // FILTER
     const filteredVideos = useMemo(() => {
@@ -144,7 +142,14 @@ const DashboardPage = () => {
                 {loading && <VideoSkeletonList />}
 
                 {!loading && sortedVideos.length > 0 && (
-                    <VideoList videoList={sortedVideos} />
+                    <VideoList
+                        videoList={sortedVideos}
+                        onDeleted={(id) => {
+                            setVideos((prev) =>
+                                prev.filter((v) => v.id !== id),
+                            );
+                        }}
+                    />
                 )}
 
                 {!loading && sortedVideos.length === 0 && search && (

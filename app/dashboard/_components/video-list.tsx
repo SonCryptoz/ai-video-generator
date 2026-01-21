@@ -1,24 +1,66 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { toast } from "@/app/actions/toast";
 import { Thumbnail } from "@remotion/player";
 import { VideoDataType } from "@/configs/schema";
 import RemotionVideo from "../../../remotion/compositions/remotion-video";
 import PlayerDialog from "./player-dialog";
+import DeleteVideoModal from "@/components/ui/delete-video-modal";
 
 const ITEMS_PER_PAGE = 8;
 
-const VideoList = ({ videoList }: { videoList: VideoDataType[] }) => {
+const VideoList = ({
+    videoList,
+    onDeleted,
+}: {
+    videoList: VideoDataType[];
+    onDeleted: (id: number) => void;
+}) => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedVideoId, setSelectedVideoId] = useState<
         string | number | null
     >(null);
     const [page, setPage] = useState(1);
 
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    useEffect(() => {
+        setPage(1);
+    }, [videoList]);
+
     // PAGINATION LOGIC
     const totalPages = Math.ceil(videoList.length / ITEMS_PER_PAGE);
     const start = (page - 1) * ITEMS_PER_PAGE;
     const currentVideos = videoList.slice(start, start + ITEMS_PER_PAGE);
 
-    if (!videoList || videoList.length === 0) {
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            setDeleting(true);
+
+            const res = await fetch(`/api/delete-video/${deleteId}`, {
+                method: "DELETE",
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data.error || "Delete failed");
+                return;
+            }
+
+            toast.success("Video deleted successfully");
+            onDeleted(deleteId);
+            setDeleteId(null);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    if (videoList.length === 0) {
         return (
             <p className="text-center text-base opacity-60 mt-10">
                 No videos found.
@@ -49,6 +91,25 @@ const VideoList = ({ videoList }: { videoList: VideoDataType[] }) => {
                             setSelectedVideoId(video.id);
                         }}
                     >
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteId(video.id);
+                            }}
+                            className="
+                                absolute top-3 right-3 z-20
+                                w-9 h-9 rounded-full
+                                bg-black/60 hover:bg-red-500
+                                flex items-center justify-center
+                                text-white text-sm
+                                opacity-0 group-hover:opacity-100
+                                transition-all duration-200
+                            "
+                            title="Delete video"
+                        >
+                            🗑
+                        </button>
+
                         <div className="relative">
                             <Thumbnail
                                 component={RemotionVideo}
@@ -134,6 +195,13 @@ const VideoList = ({ videoList }: { videoList: VideoDataType[] }) => {
                 playVideo={openDialog}
                 videoId={selectedVideoId}
                 setPlayVideo={setOpenDialog}
+            />
+
+            <DeleteVideoModal
+                open={deleteId !== null}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                loading={deleting}
             />
         </div>
     );
