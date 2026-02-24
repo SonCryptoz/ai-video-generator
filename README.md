@@ -237,9 +237,13 @@ Mục đích triển khai trên Free Tier là để demo và phục vụ mục t
 ## 🧭 Hướng phát triển
 
 💾 **Lưu lịch sử render video:** Cho phép mỗi user xem lại toàn bộ video đã tạo, chỉnh sửa lại project và đồng bộ giữa nhiều thiết bị.
+
 💳 **Tích hợp hệ thống Credit AI / Subscription:** Giới hạn số lần render theo gói (Free / Pro), quản lý credit theo thời lượng video hoặc độ phức tạp render.
+
 🌍 **Hỗ trợ đa ngôn ngữ:** Cho phép tạo video bằng nhiều ngôn ngữ khác nhau, tự động dịch script và generate voice tương ứng.
+
 🔗 **Tạo link share public:** Xuất video thành link public (CDN) hoặc embed vào website, hỗ trợ preview nhanh và download MP4.
+
 ⚙️ **Background job queue để render video thực:** Tách quá trình render nặng khỏi request chính bằng job queue (Redis / Worker), xử lý song song và tránh timeout server.
 
 ---
