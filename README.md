@@ -50,6 +50,7 @@ Dự án tập trung vào:
 - 🎙 **Audio + Captions Support**
 - 📂 **Dashboard quản lý video cá nhân**
 - 🔍 **Search nội dung trong video**
+- 🎨 **Giao diện đa dạng:** Hỗ trợ thay đổi nhiều Theme (Retro, Dark, Cyberpunk) nhờ DaisyUI.
 - ↕ **Sort theo ID (ASC / DESC)**
 - 🗑 **Delete có kiểm tra quyền sở hữu**
 - 📄 **Client-side Pagination**
