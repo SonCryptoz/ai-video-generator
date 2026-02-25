@@ -190,6 +190,7 @@ Do giới hạn tài nguyên, hệ thống có thể gặp một số vấn đ�
 - Có thể xảy ra cold start
 - Preview video có thể chậm khi tải lần đầu
 - Tính năng render video bị hạn chế do không đủ RAM và CPU (Free Tier)
+- Thời lượng video tạo ra có thể không dài do các API generate (script, audio, image) đang sử dụng bản miễn phí (free / trial), nên bị giới hạn số token.
 
 Mục đích triển khai trên Free Tier là để demo và phục vụ mục tiêu học tập.
 
