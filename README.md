@@ -1,4 +1,4 @@
-# 🎬 AI Short Video Generator
+# AI Short Video Generator
 
 <div align="center">
 
@@ -15,133 +15,205 @@
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-**Hệ thống tạo video ngắn tự động bằng AI – từ kịch bản đến preview hoàn chỉnh**
+**Ứng dụng web fullstack hỗ trợ tạo video ngắn bằng AI**
 <br />
-🌐 [Xem Demo](https://ai-video-generator-yw3i.onrender.com/) - 🐞 [Báo Lỗi](https://github.com/SonCryptoz/ai-video-generator/issues)
+[Xem Demo](https://ai-video-generator-yw3i.onrender.com/) - [Báo Lỗi](https://github.com/SonCryptoz/ai-video-generator/issues)
 
 </div>
 
-## 📖 Giới thiệu
+## Giới thiệu
 
-**AI Short Video Generator** là một ứng dụng web fullstack cho phép người dùng tạo video ngắn tự động bằng AI.  
+**AI Short Video Generator** là ứng dụng web fullstack cho phép người dùng tạo video ngắn từ nội dung được sinh tự động bằng AI.
 
-Hệ thống có thể:
+Ứng dụng xây dựng một pipeline gồm nhiều bước: **tạo nội dung → tạo script → xử lý audio → tạo scene → dựng video**, sau đó sử dụng **Remotion** để preview và render video trực tiếp trong ứng dụng.
 
-- Sinh kịch bản video
-- Tạo hình ảnh theo prompt
-- Kết hợp audio và phụ đề
-- Preview video trực tiếp trên web bằng Remotion
-- Quản lý video cá nhân trong Dashboard
+Hệ thống sử dụng **Next.js 16 App Router** cho frontend và server-side logic, **Clerk** cho authentication, **Drizzle ORM + Neon PostgreSQL** cho dữ liệu ứng dụng và **Cloudinary** cho media storage.
 
-Dự án tập trung vào:
-- 🔐 Bảo mật server-side với Clerk
-- 🧱 Kiến trúc tách biệt rõ ràng Client – Server
-- 🗄 Database chuẩn hóa với Drizzle ORM
-- 🎬 Tích hợp video engine vào ứng dụng web thực tế
+Dự án tập trung vào việc tích hợp các dịch vụ AI và media processing vào một ứng dụng web fullstack thay vì chỉ thực hiện riêng lẻ từng bước tạo nội dung.
 
----
+## Tính năng
 
-## ✨ Tính năng chính
+### Video Generation
 
-- 🔐 **Authentication & Authorization:** Xác thực người dùng bằng Clerk
-- 🎬 **Video Preview Engine:** Render video bằng Remotion
-- 🧠 **AI Script Generation:** Tạo nội dung video tự động
-- 🖼 **AI Image Prompt:** Sinh hình ảnh theo ngữ cảnh kịch bản
-- 🎙 **Audio + Captions Support**
-- 📂 **Dashboard quản lý video cá nhân**
-- 🔍 **Search nội dung trong video**
-- 🎨 **Giao diện đa dạng:** Hỗ trợ thay đổi nhiều Theme (Retro, Dark, Cyberpunk) nhờ DaisyUI.
-- ↕ **Sort theo ID (ASC / DESC)**
-- 🗑 **Delete có kiểm tra quyền sở hữu**
-- 📄 **Client-side Pagination**
+* Tạo nội dung và script video bằng AI.
+* Tạo hình ảnh dựa trên nội dung và prompt của từng scene.
+* Kết hợp hình ảnh, audio và captions.
+* Tạo composition video động bằng React và Remotion.
+* Preview video trực tiếp trên trình duyệt.
+* Render video từ các composition đã tạo.
 
----
+### Dashboard
 
-## 🧠 Kiến trúc hệ thống
+* Quản lý các video đã tạo.
+* Tìm kiếm video theo nội dung.
+* Sắp xếp danh sách video theo ID tăng dần hoặc giảm dần.
+* Phân trang dữ liệu phía client.
+* Xóa video và kiểm tra quyền sở hữu trước khi thực hiện mutation.
+
+### Authentication
+
+* Đăng ký và đăng nhập thông qua Clerk.
+* Quản lý user identity ở server-side.
+* Bảo vệ các thao tác liên quan đến dữ liệu người dùng.
+* Kiểm tra ownership trước các thao tác CRUD.
+
+## Video Generation Pipeline
+
+Quy trình tạo video có thể được mô tả như sau:
 
 ```mermaid
 graph TD
 
-    A[User] --> B[Clerk Auth]
-    B --> C[Next.js App]
+    A[User Prompt] --> B[AI Script Generation]
+    B --> C[Scene Generation]
 
-    C --> D[Server Layer]
+    C --> D[Image Generation]
+    C --> E[Audio Generation]
+    C --> F[Caption / Subtitle Processing]
 
-    subgraph Application
-        D --> E[Gemini API]
-        D --> F[Drizzle ORM]
+    D --> G[Scene Assets]
+    E --> G
+    F --> G
+
+    G --> H[Remotion Composition]
+    H --> I[Video Preview]
+    H --> J[Video Rendering]
+
+    J --> K[Cloudinary]
+    K --> L[Video in Dashboard]
+```
+
+### Pipeline
+
+1. Người dùng nhập prompt hoặc nội dung muốn tạo video.
+2. Gemini được sử dụng để tạo và chuẩn hóa script.
+3. Script được chia thành các scene.
+4. Mỗi scene được xử lý để tạo image, audio và caption tương ứng.
+5. Các assets được đưa vào Remotion composition.
+6. Remotion tạo preview và xử lý quá trình render.
+7. Video output được lưu trữ và quản lý thông qua Cloudinary.
+8. Người dùng có thể xem lại các video đã tạo trong Dashboard.
+
+## Kiến trúc hệ thống
+
+```mermaid
+graph TD
+
+    A[User] --> B[Clerk Authentication]
+    B --> C[Next.js App Router]
+
+    C --> D[Server Actions]
+    C --> E[API Routes]
+
+    subgraph AI["AI & Media Services"]
+        F[Gemini API]
+        G[Hugging Face]
+        H[Murf API]
+        I[Caption / Speech Service]
     end
 
-    F --> G[(Neon PostgreSQL)]
-    D --> H[Cloudinary]
-    D --> I[Remotion Renderer]
-    C --> J[Remotion Preview]
+    subgraph Data["Application Data"]
+        J[Drizzle ORM]
+        K[(Neon PostgreSQL)]
+    end
+
+    subgraph Media["Media"]
+        L[Cloudinary]
+    end
+
+    subgraph Video["Video Engine"]
+        M[Remotion]
+        N[Video Renderer]
+    end
+
+    D --> F
+    D --> G
+    D --> H
+    D --> I
+
+    D --> J
+    J --> K
+
+    E --> L
+
+    C --> M
+    E --> N
+    N --> L
 ```
----
 
-## 🔒 Nguyên tắc bảo mật
+## Bảo mật
 
-- Không tin dữ liệu định danh từ client
-- Mọi thao tác CRUD đều kiểm tra auth().userId
-- Chỉ chủ sở hữu mới có quyền xoá video
-- API được bảo vệ hoàn toàn ở server
----
+Các thao tác liên quan đến dữ liệu người dùng được xử lý ở server-side.
 
-## 🛠 Công nghệ sử dụng
+* Không tin tưởng `userId` được gửi trực tiếp từ client.
+* User identity được lấy từ Clerk ở server.
+* Các mutation kiểm tra `auth().userId` trước khi thực hiện.
+* Chỉ chủ sở hữu mới có thể xóa dữ liệu video tương ứng.
+* Các secret API key được lưu trong environment variables.
+* Không expose các server-side credentials ra client.
 
-### 🚀 Frontend
-- **Next.js 16 (App Router)**
-- **React 19**
-- **TypeScript**
-- **Tailwind CSS 4 + DaisyUI**
-- **Framer Motion + GSAP** (Animation nâng cao)
-- **Radix UI** (Accessible Components)
-- **Zustand** (State Management)
+## Công nghệ
 
-### 🎬 Video Engine
-- **Remotion** (Render video bằng React)
-- **Remotion Bundler / Renderer**
+### Frontend
 
-### 🤖 AI & Media Processing
-- **Google Gemini API** (Script / Content Generation)
-- **Hugging Face Inference API** (AI Model Integration)
-- **AssemblyAI** (Speech-to-Text / Voice Processing)
+* **Next.js 16 / App Router** – Framework chính cho ứng dụng.
+* **React 19** – Xây dựng UI và Remotion compositions.
+* **TypeScript** – Static typing.
+* **Tailwind CSS 4 + DaisyUI** – Styling và theme.
+* **Framer Motion + GSAP** – Animation và UI transitions.
+* **Radix UI** – Accessible UI primitives.
+* **Zustand** – Global state management.
 
-### ☁️ Backend & Database
-- **Next.js API Routes**
-- **Drizzle ORM**
-- **Neon PostgreSQL (Serverless DB)**
-- **Clerk Authentication**
-- **Cloudinary** (Media Storage & CDN)
+### Video
 
-### 🧰 Dev Tools
-- **Drizzle Kit**
-- **ESLint**
-- **TypeScript 5**
----
+* **Remotion** – Tạo video composition bằng React.
+* **Remotion Bundler / Renderer** – Bundle và render video.
 
-## 🚀 Cài đặt
+### AI & Media
 
-### Clone Project
+* **Google Gemini API** – Sinh script và nội dung video.
+* **Hugging Face Inference API** – Tích hợp AI models.
+* **Murf API** – Text-to-Speech / voice generation.
+* **AssemblyAI / Caption API** – Speech-to-text và caption processing.
+* **Cloudinary** – Media storage và CDN.
+
+### Backend & Database
+
+* **Next.js Server Actions / API Routes** – Server-side operations.
+* **Drizzle ORM** – Database ORM.
+* **Neon PostgreSQL** – Serverless PostgreSQL database.
+* **Clerk** – Authentication và user management.
+
+### Development
+
+* **Drizzle Kit** – Database schema và migrations.
+* **ESLint** – Code quality.
+* **TypeScript** – Type checking.
+
+## Cài đặt
+
+### 1. Clone repository
 
 ```bash
 git clone https://github.com/SonCryptoz/ai-video-generator.git
 cd ai-video-generator
 ```
 
-### Cài dependencies
+### 2. Cài dependencies
 
 ```bash
-npm i
+npm install
 ```
 
-### Tạo file môi trường .env.local
+### 3. Cấu hình environment variables
 
-```bash
-NEXT_PUBLIC_DRIZZLE_DATABASE_URL=your_url
+Tạo file `.env.local`:
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
-CLERK_SECRET_KEY=your_key
+```env
+NEXT_PUBLIC_DRIZZLE_DATABASE_URL=your_database_url
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
 
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
@@ -149,107 +221,168 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
 
-NEXT_PUBLIC_GEMINI_API_KEY=your_key
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_key
 
-MURF_API_KEY=your_key
+MURF_API_KEY=your_murf_key
 
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
-CAPTION_API=your_caption_api
+CAPTION_API=your_assembly_caption_api
 
-HF_TOKEN=your_hf_token
+HF_TOKEN=your_huggingface_token
 
-NEXT_PUBLIC_APP_URL=your_app_url
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### Thiết lập Database (Drizzle)
+Các secret key không nên được commit vào repository.
+
+### 4. Thiết lập database
+
+Đẩy schema lên database:
+
 ```bash
 npm run db:push
+```
+
+Mở Drizzle Studio:
+
+```bash
 npm run db:studio
 ```
 
-### Chế độ Development
+### 5. Chạy development server
 
 ```bash
 npm run dev
-```  
+```
 
-### Truy cập
+Truy cập:
 
-```bash
+```text
 http://localhost:3000
 ```
----
 
-## ⚠️ Hạn chế (Free Tier)
+## Cấu trúc thư mục
 
-Ứng dụng hiện được triển khai trên hạ tầng miễn phí (Render Free Tier – 0.1 CPU, 512MB RAM).
-Do giới hạn tài nguyên, hệ thống có thể gặp một số vấn đề sau:
-- Có thể xảy ra cold start
-- Preview video có thể chậm khi tải lần đầu
-- Tính năng render video bị hạn chế do không đủ RAM và CPU (Free Tier)
-- Thời lượng video tạo ra có thể không dài do các API generate (script, audio, image) đang sử dụng bản miễn phí (free / trial), nên bị giới hạn số token.
-
-Mục đích triển khai trên Free Tier là để demo và phục vụ mục tiêu học tập.
-
----
-
-## 📁 Cấu trúc thư mục
-
-```txt
-/app
-    /_context        # Global Context Provider (Auth, Theme, App State)
-    /(auth)          # Route nhóm cho đăng nhập / đăng ký (Clerk)
-    /action          # Server Actions (AI generation, DB mutation)
-    /api             # API Routes (upload, render, AI handler)
-    /dashboard       # Trang quản lý video & user workspace
-    /store           # Zustand store (timeline, scene, video state)
-    globals.css
-    layout.tsx
-    logo.svg
-    page.tsx
-    provider.tsx
-    theme-provider.tsx
-
-/components
-    /ui              # Reusable UI components (button, dialog, slider...)
-
-/configs            # Cấu hình AI model, DB, cloud services
-/lib                # Helper functions, utils, API clients
-/public             # Static assets (fonts, icons, images)
-/remotion           # Video composition, scenes, templates
-/scripts            # Script xử render video
+```text
+ai-video-generator/
+│
+├── app/
+│   ├── _context/               # Global providers và application context
+│   ├── (auth)/                 # Authentication routes
+│   ├── action/                 # Server Actions
+│   ├── api/                    # API Routes
+│   ├── dashboard/              # Video dashboard
+│   ├── store/                  # Client state
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── logo.svg
+│   ├── page.tsx
+│   ├── provider.tsx
+│   └── theme-provider.tsx
+│
+├── components/
+│   └── ui/                     # Reusable UI components
+│
+├── configs/                    # AI, database và service configuration
+├── lib/                        # Helpers, utilities và API clients
+├── public/                     # Static assets
+├── remotion/                   # Video compositions, scenes và templates
+├── scripts/                    # Video rendering scripts
+│
+├── drizzle.config.ts
+├── package.json
+├── next.config.ts
+└── README.md
 ```
----
 
-## 🎯 Mục tiêu học tập
+## Những gì đã học được
 
-- [x] **AI Video Pipeline:** Xây dựng hoàn chỉnh quy trình Prompt → Script → Audio → Scene → Render cho hệ thống tạo video tự động.
-- [x] **AI Integration:** Tích hợp Gemini API để sinh nội dung kịch bản, tối ưu Prompt Engineering và chuẩn hóa output cho video engine.
-- [x] **Video Rendering Engine:** Làm chủ cơ chế dựng video bằng Remotion, thiết kế composition động bằng React.
-- [x] **Authentication & SaaS Architecture:** Triển khai xác thực người dùng với Clerk và xây dựng hệ thống đa người dùng.
-- [x] **Database & ORM:** Thiết kế schema và quản lý dữ liệu bằng Drizzle ORM kết hợp PostgreSQL serverless.
-- [x] **Modern Fullstack:** Thành thạo Next.js 16+ (App Router) và quản lý state với Zustand.
-- [x] **Media & Cloud Handling:** Xử lý upload, lưu trữ và phân phối media qua Cloudinary, tối ưu hiệu suất render và streaming.
----
+Thông qua dự án này, tôi có cơ hội thực hành:
 
-## 🧭 Hướng phát triển
+* Xây dựng ứng dụng fullstack với Next.js App Router.
+* Tích hợp nhiều AI services vào một workflow thống nhất.
+* Thiết kế pipeline từ prompt đến script, audio, scene và video output.
+* Xây dựng video composition động bằng React và Remotion.
+* Xử lý video rendering trong môi trường web.
+* Triển khai authentication và authorization với Clerk.
+* Thiết kế database schema và thao tác dữ liệu bằng Drizzle ORM.
+* Sử dụng PostgreSQL serverless với Neon.
+* Quản lý media storage và CDN thông qua Cloudinary.
+* Quản lý client state bằng Zustand.
+* Tách server-side operations khỏi client-side UI.
+* Kiểm tra ownership và bảo vệ các thao tác CRUD.
 
-💾 **Lưu lịch sử render video:** Cho phép mỗi user xem lại toàn bộ video đã tạo, chỉnh sửa lại project và đồng bộ giữa nhiều thiết bị.
+## Hạn chế khi triển khai
 
-💳 **Tích hợp hệ thống Credit AI / Subscription:** Giới hạn số lần render theo gói (Free / Pro), quản lý credit theo thời lượng video hoặc độ phức tạp render.
+Phiên bản demo hiện được triển khai trên **Render Free Tier**, vì vậy tài nguyên CPU và RAM bị giới hạn.
 
-🌍 **Hỗ trợ đa ngôn ngữ:** Cho phép tạo video bằng nhiều ngôn ngữ khác nhau, tự động dịch script và generate voice tương ứng.
+Một số hạn chế có thể gặp:
 
-🔗 **Tạo link share public:** Xuất video thành link public (CDN) hoặc embed vào website, hỗ trợ preview nhanh và download MP4.
+* Cold start khiến thời gian phản hồi ban đầu tăng.
+* Video preview có thể tải chậm trong lần đầu.
+* Video rendering bị giới hạn bởi CPU và RAM của môi trường deployment.
+* Các API AI ở free/trial tier có giới hạn về request, token hoặc thời gian xử lý.
+* Video dài hoặc pipeline có nhiều scene có thể mất nhiều thời gian để hoàn thành.
+* Các tác vụ render nặng không phù hợp để xử lý trực tiếp trong request lifecycle của một server tài nguyên thấp.
 
-⚙️ **Background job queue để render video thực:** Tách quá trình render nặng khỏi request chính bằng job queue (Redis / Worker), xử lý song song và tránh timeout server.
+Phiên bản hiện tại chủ yếu phục vụ **demo và mục đích học tập**, chưa được thiết kế cho workload production có yêu cầu render lớn.
 
----
+## Hướng phát triển
 
-## 🙏 Lời cảm ơn
+### Video Rendering Queue
+
+Tách quá trình render khỏi request chính bằng background job queue và worker.
+
+Có thể sử dụng:
+
+* Redis + BullMQ
+* Dedicated rendering worker
+* Serverless job queue
+
+Mục tiêu là tránh timeout khi render video dài hoặc nhiều scene.
+
+### Credit & Subscription
+
+Xây dựng hệ thống credit để giới hạn tài nguyên theo từng tài khoản:
+
+* Free
+* Pro
+* Premium
+
+Credit có thể được tính dựa trên thời lượng video, số scene hoặc chi phí AI API.
+
+### Project Management
+
+Mở rộng Dashboard thành workspace hoàn chỉnh:
+
+* Lưu lịch sử render.
+* Chỉnh sửa project đã tạo.
+* Duplicate project.
+* Đồng bộ project giữa nhiều thiết bị.
+* Quản lý version của video.
+
+### Public Video Sharing
+
+Cho phép người dùng:
+
+* Tạo public URL cho video.
+* Embed video vào website.
+* Preview thông qua CDN.
+* Download video output.
+
+### Multi-language Video
+
+Mở rộng pipeline để hỗ trợ:
+
+* Nhiều ngôn ngữ cho script.
+* Translation tự động.
+* Voice generation theo ngôn ngữ.
+* Caption tương ứng với từng ngôn ngữ.
+
+## Lời cảm ơn
 
 Dự án này sẽ không thể hoàn thiện nếu thiếu sự hỗ trợ từ các công cụ và nền tảng sau:
 
