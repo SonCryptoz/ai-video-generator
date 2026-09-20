@@ -55,8 +55,12 @@ export default function PlayerDialog({
 
         try {
             setExporting(true);
+            toast.info(
+                "Exporting video... This may take 1-2 minutes if the render engine is waking up.",
+            );
 
-            const res = await fetch("/api/render-video", {
+            const renderHost = process.env.NEXT_PUBLIC_RENDER_SERVICE_URL || "";
+            const res = await fetch(`${renderHost}/api/render-video`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

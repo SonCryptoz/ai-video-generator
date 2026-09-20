@@ -6,6 +6,19 @@ import path from "path";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+    return new NextResponse(null, {
+        status: 200,
+        headers: corsHeaders,
+    });
+}
+
 export async function POST(req: Request) {
     try {
         const { videoId, durationInFrames, fps } = await req.json();
@@ -17,7 +30,7 @@ export async function POST(req: Request) {
         if (!video) {
             return NextResponse.json(
                 { success: false, message: "Video not found" },
-                { status: 404 },
+                { status: 404, headers: corsHeaders },
             );
         }
 
@@ -54,12 +67,12 @@ export async function POST(req: Request) {
         return NextResponse.json({
             success: true,
             url: output.trim(),
-        });
+        }, { headers: corsHeaders });
     } catch (err) {
         console.error(err);
         return NextResponse.json(
             { success: false, message: "Export failed" },
-            { status: 500 },
+            { status: 500, headers: corsHeaders },
         );
     }
 }
