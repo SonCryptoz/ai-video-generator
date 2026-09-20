@@ -6,9 +6,8 @@ import {
     useVideoConfig,
     useCurrentFrame,
     interpolate,
-    Html5Audio,
-    Audio,
 } from "remotion";
+import { Audio } from "@remotion/media";
 
 type Props = VideoDataType & {
     isPreview?: boolean;
@@ -18,7 +17,7 @@ const RemotionVideo = ({
     imageList = [],
     audioFileUrl,
     captions = [],
-    isPreview = false,
+    // isPreview = false,
 }: Props) => {
     const { durationInFrames, fps, height } = useVideoConfig();
     const frame = useCurrentFrame();
@@ -63,6 +62,7 @@ const RemotionVideo = ({
                 >
                     <Img
                         src={img}
+                        crossOrigin="anonymous"
                         style={{
                             width: "100%",
                             height: "100%",
@@ -125,12 +125,7 @@ const RemotionVideo = ({
             )}
 
             {/* AUDIO */}
-            {audioFileUrl &&
-                (isPreview ? (
-                    <Audio src={audioFileUrl} />
-                ) : (
-                    <Html5Audio src={audioFileUrl} />
-                ))}
+            {audioFileUrl && <Audio src={audioFileUrl} />}
         </AbsoluteFill>
     );
 };

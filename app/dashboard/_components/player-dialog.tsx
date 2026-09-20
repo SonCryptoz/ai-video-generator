@@ -20,6 +20,7 @@ export default function PlayerDialog({
     const [videoData, setVideoData] = useState<VideoDataType | null>(null);
     const [durationInFrames, setDurationInFrames] = useState(120);
     const [exporting, setExporting] = useState(false);
+    const [renderProgress, setRenderProgress] = useState<number | null>(null);
     const fps = 30;
 
     const calculateDuration = async (data: VideoDataType) => {
@@ -51,50 +52,132 @@ export default function PlayerDialog({
     };
 
     const renderVideo = async () => {
-        if (!videoId || exporting) return;
+        if (!videoId || exporting || !videoData) return;
+
+        const createdBlobUrls: string[] = [];
 
         try {
             setExporting(true);
+            setRenderProgress(0);
             toast.info(
-                "Exporting video... This may take 1-2 minutes if the render engine is waking up.",
+                "Rendering video in your browser with hardware acceleration...",
             );
 
-            const renderHost = process.env.NEXT_PUBLIC_RENDER_SERVICE_URL || "";
-            const res = await fetch(`${renderHost}/api/render-video`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
+            // Pre-load assets as local Blob URLs so they are strictly same-origin (cannot taint canvas)
+            const toBlobUrl = async (url: string) => {
+                try {
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    createdBlobUrls.push(blobUrl);
+                    return blobUrl;
+                } catch (e) {
+                    console.warn("Fallback to original URL:", url, e);
+                    return url;
+                }
+            };
+
+            const localImageList = await Promise.all(
+                (videoData.imageList || []).map(toBlobUrl),
+            );
+
+            const localAudioUrl = videoData.audioFileUrl
+                ? await toBlobUrl(videoData.audioFileUrl)
+                : videoData.audioFileUrl;
+
+            const inputProps = {
+                ...videoData,
+                imageList: localImageList,
+                audioFileUrl: localAudioUrl,
+                isPreview: false,
+            };
+
+            // Dynamic import to avoid any SSR evaluation
+            const { renderMediaOnWeb } = await import("@remotion/web-renderer");
+
+            const result = await renderMediaOnWeb({
+                composition: {
+                    component: RemotionVideo,
+                    id: "RemotionVideo",
+                    width: 1080,
+                    height: 1920,
+                    fps: fps,
+                    durationInFrames: durationInFrames,
+                    defaultProps: inputProps,
                 },
-                body: JSON.stringify({
-                    videoId,
-                    durationInFrames,
-                    fps,
-                }),
+                inputProps,
+                codec: "h264",
+                container: "mp4",
+                onProgress: ({ encodedFrames }) => {
+                    const percent = Math.round(
+                        (encodedFrames / durationInFrames) * 100,
+                    );
+                    setRenderProgress(Math.min(percent, 99));
+                },
             });
 
-            if (!res.ok) {
-                throw new Error(`API error ${res.status}`);
+            setRenderProgress(100);
+            const blob = await result.getBlob();
+
+            let videoUrl: string | null = null;
+
+            // Upload lên Cloudinary để lấy link URL xem video
+            try {
+                const signRes = await fetch("/api/cloudinary-sign", {
+                    method: "POST",
+                });
+                if (signRes.ok) {
+                    const signData = await signRes.json();
+                    const formData = new FormData();
+                    formData.append("file", blob, `video-${videoId}.mp4`);
+                    formData.append("api_key", signData.apiKey);
+                    formData.append("timestamp", String(signData.timestamp));
+                    formData.append("signature", signData.signature);
+                    formData.append("folder", signData.folder);
+
+                    const uploadRes = await fetch(
+                        `https://api.cloudinary.com/v1_1/${signData.cloudName}/video/upload`,
+                        {
+                            method: "POST",
+                            body: formData,
+                        },
+                    );
+
+                    if (uploadRes.ok) {
+                        const uploadJson = await uploadRes.json();
+                        if (uploadJson.secure_url) {
+                            videoUrl = uploadJson.secure_url;
+                        }
+                    }
+                }
+            } catch (uploadErr) {
+                console.warn("Cloudinary upload error:", uploadErr);
             }
 
-            const json = await res.json();
-
-            if (!json.url) {
-                throw new Error("Export succeeded but no URL returned");
-            }
-
-            if (!json.success || !json.url) {
-                throw new Error(json.message || "Export failed");
-            }
+            // Mở tab mới với URL Cloudinary hoặc Blob URL
+            const finalUrl = videoUrl || URL.createObjectURL(blob);
 
             toast.success("Export completed. Opening video in a new tab");
 
             setTimeout(() => {
-                window.open(json.url, "_blank");
-            }, 3000);
+                window.open(finalUrl, "_blank");
+            }, 1000);
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Export failed");
+            console.error("Client render error:", err);
+            toast.error(
+                err instanceof Error
+                    ? err.message
+                    : "Client-side video render failed",
+            );
         } finally {
             setExporting(false);
+            setRenderProgress(null);
+            // Clean up blob URLs from memory
+            createdBlobUrls.forEach((url) => {
+                try {
+                    URL.revokeObjectURL(url);
+                } catch {}
+            });
         }
     };
 
@@ -197,8 +280,12 @@ export default function PlayerDialog({
             </div>
             <CustomLoading
                 loading={exporting}
-                title="Rendering your video"
-                message="This may take a few moments. Please don’t close or reload the site."
+                title={
+                    renderProgress !== null
+                        ? `Rendering video (${renderProgress}%)`
+                        : "Rendering your video..."
+                }
+                message="Processing frames with GPU acceleration directly in your browser. Please keep this tab open."
             />
         </div>
     );

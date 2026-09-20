@@ -3,6 +3,7 @@
 <div align="center">
 
 [![Next.js](https://img.shields.io/badge/Next.js-16+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.com/)
@@ -17,7 +18,7 @@
 
 **Ứng dụng web fullstack hỗ trợ tạo video ngắn bằng AI**
 <br />
-[Xem Demo](https://ai-video-generator-yw3i.onrender.com/) - [Báo Lỗi](https://github.com/SonCryptoz/ai-video-generator/issues)
+[Xem Demo](https://ai-video-generator-red-two.vercel.app) - [Báo Lỗi](https://github.com/SonCryptoz/ai-video-generator/issues)
 
 </div>
 
@@ -76,11 +77,11 @@ graph TD
     F --> G
 
     G --> H[Remotion Composition]
-    H --> I[Video Preview]
-    H --> J[Video Rendering]
+    H --> I[Video Preview - Remotion Player]
+    H --> J[Client-Side Video Rendering - WebCodecs & GPU]
 
-    J --> K[Cloudinary]
-    K --> L[Video in Dashboard]
+    J --> K[Cloudinary Signed Direct Upload]
+    K --> L[Video Ready in New Tab & Dashboard]
 ```
 
 ### Pipeline
@@ -88,11 +89,11 @@ graph TD
 1. Người dùng nhập prompt hoặc nội dung muốn tạo video.
 2. Gemini được sử dụng để tạo và chuẩn hóa script.
 3. Script được chia thành các scene.
-4. Mỗi scene được xử lý để tạo image, audio và caption tương ứng.
+4. Mỗi scene được xử lý để tạo image (Hugging Face), audio (Murf AI) và caption tương ứng (AssemblyAI).
 5. Các assets được đưa vào Remotion composition.
-6. Remotion tạo preview và xử lý quá trình render.
-7. Video output được lưu trữ và quản lý thông qua Cloudinary.
-8. Người dùng có thể xem lại các video đã tạo trong Dashboard.
+6. Remotion Player hiển thị preview mượt mà trực tiếp trên trình duyệt.
+7. Khi bấm Export, Remotion Web-Renderer (`renderMediaOnWeb`) tận dụng WebCodecs API và GPU của người dùng để render từng khung hình ra file MP4 trực tiếp trên máy client.
+8. Video output được tải trực tiếp lên Cloudinary thông qua cơ chế Signed Upload và tự động mở sang tab mới cho người dùng.
 
 ## Kiến trúc hệ thống
 
@@ -100,10 +101,10 @@ graph TD
 graph TD
 
     A[User] --> B[Clerk Authentication]
-    B --> C[Next.js App Router]
+    B --> C[Next.js App Router - Vercel]
 
     C --> D[Server Actions]
-    C --> E[API Routes]
+    C --> E[API Routes / Cloudinary Signature]
 
     subgraph AI["AI & Media Services"]
         F[Gemini API]
@@ -117,13 +118,13 @@ graph TD
         K[(Neon PostgreSQL)]
     end
 
-    subgraph Media["Media"]
+    subgraph Media["Media Storage"]
         L[Cloudinary]
     end
 
-    subgraph Video["Video Engine"]
-        M[Remotion]
-        N[Video Renderer]
+    subgraph Client["Client-Side Video Engine"]
+        M[Remotion Player]
+        N[Remotion Web-Renderer - WebCodecs GPU]
     end
 
     D --> F
@@ -137,8 +138,8 @@ graph TD
     E --> L
 
     C --> M
-    E --> N
-    N --> L
+    M --> N
+    N -->|Signed Direct Upload| L
 ```
 
 ## Bảo mật
@@ -164,10 +165,12 @@ Các thao tác liên quan đến dữ liệu người dùng được xử lý �
 * **Radix UI** – Accessible UI primitives.
 * **Zustand** – Global state management.
 
-### Video
+### Video & Media Engine
 
-* **Remotion** – Tạo video composition bằng React.
-* **Remotion Bundler / Renderer** – Bundle và render video.
+* **Remotion** – Tạo video composition động bằng React.
+* **Remotion Web-Renderer (`@remotion/web-renderer`)** – Render video MP4 trực tiếp trên trình duyệt bằng WebCodecs API và tăng tốc phần cứng (GPU).
+* **Remotion Media (`@remotion/media`)** – Quản lý và giải mã audio stream đồng bộ theo từng khung hình.
+* **Remotion Player (`@remotion/player`)** – Preview video thời gian thực trên giao diện web.
 
 ### AI & Media
 
@@ -302,47 +305,18 @@ ai-video-generator/
 
 Thông qua dự án này, tôi có cơ hội thực hành:
 
-* Xây dựng ứng dụng fullstack với Next.js App Router.
-* Tích hợp nhiều AI services vào một workflow thống nhất.
+* Xây dựng ứng dụng fullstack với Next.js 16 App Router.
+* Tích hợp nhiều AI services (Gemini, Hugging Face, Murf, AssemblyAI) vào một workflow thống nhất.
 * Thiết kế pipeline từ prompt đến script, audio, scene và video output.
 * Xây dựng video composition động bằng React và Remotion.
-* Xử lý video rendering trong môi trường web.
 * Triển khai authentication và authorization với Clerk.
-* Thiết kế database schema và thao tác dữ liệu bằng Drizzle ORM.
-* Sử dụng PostgreSQL serverless với Neon.
-* Quản lý media storage và CDN thông qua Cloudinary.
-* Quản lý client state bằng Zustand.
-* Tách server-side operations khỏi client-side UI.
-* Kiểm tra ownership và bảo vệ các thao tác CRUD.
-
-## Hạn chế khi triển khai
-
-Phiên bản demo hiện được triển khai trên **Render Free Tier**, vì vậy tài nguyên CPU và RAM bị giới hạn.
-
-Một số hạn chế có thể gặp:
-
-* Cold start khiến thời gian phản hồi ban đầu tăng.
-* Video preview có thể tải chậm trong lần đầu.
-* Video rendering bị giới hạn bởi CPU và RAM của môi trường deployment.
-* Các API AI ở free/trial tier có giới hạn về request, token hoặc thời gian xử lý.
-* Video dài hoặc pipeline có nhiều scene có thể mất nhiều thời gian để hoàn thành.
-* Các tác vụ render nặng không phù hợp để xử lý trực tiếp trong request lifecycle của một server tài nguyên thấp.
-
-Phiên bản hiện tại chủ yếu phục vụ **demo và mục đích học tập**, chưa được thiết kế cho workload production có yêu cầu render lớn.
+* Thiết kế database schema và thao tác dữ liệu type-safe bằng Drizzle ORM + Neon PostgreSQL.
+* Quản lý client state bằng Zustand và animation mượt mà với Framer Motion & GSAP.
 
 ## Hướng phát triển
 
-### Video Rendering Queue
-
-Tách quá trình render khỏi request chính bằng background job queue và worker.
-
-Có thể sử dụng:
-
-* Redis + BullMQ
-* Dedicated rendering worker
-* Serverless job queue
-
-Mục tiêu là tránh timeout khi render video dài hoặc nhiều scene.
+### Bulk Video Rendering & Cloud Rendering
+Mở rộng thêm tùy chọn render phân tán thông qua **Remotion Lambda (AWS)** cho các trường hợp xuất hàng loạt video cùng lúc với độ dài lớn.
 
 ### Credit & Subscription
 
